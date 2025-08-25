@@ -1,69 +1,93 @@
-# 🚚 Truck Delivery Optimisation Problem
+# Truck Replenishment Cost Optimization
 
-## 📌 Problem Statement
-We have a set of **warehouses**, **trucks**, and **dark stores**. Each dark store places orders that must be fulfilled at specific timestamps. Each order has a **weight** and **volume requirement**, and each truck has corresponding **capacity constraints**.  
-
-We want to **optimise overall delivery cost** while ensuring that all orders are fulfilled.
+This project simulates a replenishment system where orders arrive over time and must be fulfilled using available trucks.  
+Each truck has a weight and volume capacity, as well as a cost factor. The goal is to **minimize the total replenishment cost** while ensuring all orders are satisfied.
 
 ---
 
-## 🚛 Constraints
-
-### Trucks at Warehouse
-- Truck 1 → **Capacity:** 100 kg, 1000 m³ | **Cost Factor (CF):** 1  
-- Truck 2 → **Capacity:** 200 kg, 2000 m³ | **Cost Factor (CF):** 2  
-- Truck 3 → **Capacity:** 500 kg, 5000 m³ | **Cost Factor (CF):** 5  
-
-### Orders
-- `200 units` at Dark Store 1, Timestamp 1  
-- `100 units` at Dark Store 2, Timestamp 1  
-- `500 units` at Dark Store 3, Timestamp 3  
-
-### Unit Constraints
-- Each unit = **1 kg** and **20 m³**  
-
-### Distances
-- Warehouse → any Dark Store = **1.5 km**  
-- Dark Store ↔ Dark Store = **2 km**  
+## 📌 Features
+- Accepts multiple orders with:
+  - `truck_id`
+  - `units`
+  - `timestamp`
+- Calculates total demand (units → weight and volume) at each timestamp.
+- Generates **all possible truck combinations** that can satisfy the demand.
+- Intersects feasible combinations based on **both volume and weight**.
+- Computes **minimum transportation cost** using truck-specific cost factors.
+- Prints detailed debug information:
+  - Demand at each timestamp
+  - Volume-fit combinations
+  - Weight-fit combinations
+  - Feasible truck allocations
+  - Minimum cost at each timestamp
 
 ---
 
-## 🎯 Goal
-Deliver all orders at their required timestamps **with minimum delivery cost**, where:  
+## 🛠️ How It Works
+1. **Orders Input**:  
+   User enters number of orders and their details (`truck_id units timestamp`).
 
-Cost = Cost Factor (CF) × Total Distance Travelled
+   Example:
+   3
+   1 200 1
+   2 100 1
+   3 500 4
 
+2. **Demand Calculation**:  
+The system aggregates total units required at each timestamp.
+
+Example output:
+at_timestamp: 0 300 0 0 500
+
+
+3. **Combination Generation**:  
+- For given demand (volume & weight), generate **all truck combinations**.
+- Filter combinations that can satisfy **both weight and volume**.
+
+4. **Cost Calculation**:  
+Cost = `truck_cost_factor × distance`.
+
+Trucks have the following parameters:
+- Truck 0: 100w, 1000v, cost factor 1  
+- Truck 1: 200w, 2000v, cost factor 2  
+- Truck 2: 500w, 5000v, cost factor 3  
+
+5. **Final Output**:  
+Displays the minimum replenishment cost across all timestamps.
+
+---
+
+## 📊 Example Run
+
+**Input**
+Enter the number of orders: 3
+Enter the orders:
+1 200 1
+2 100 1
+3 500 4
+
+
+**Output**
+
+![Program Output](assets/output.png)
 
 ---
 
-## 🧩 Algorithm
-
-1. **Group Orders by Timestamp**  
-   - All orders with the same timestamp can be considered together.  
-
-2. **Calculate Weight and Volume Requirements**  
-   - Weight = units × 1  
-   - Volume = units × 20  
-
-3. **Check Feasible Trucks**  
-   - A truck can only be used if both **weight** and **volume** fit within its capacity.  
-   - If not, the order must be split into **multiple trucks**.  
-
-4. **Route Optimisation**  
-   - For multiple stores in one timestamp, compute the **minimum route distance**:  
-     - Warehouse → Store1 → Store2 … → Warehouse  
-     - Try all permutations.  
-
-5. **Cost Calculation**  
-
-Cost = CF × (Route Distance)
-
-
-6. **Choose Truck Combination with Lowest Cost**.  
+## ⚙️ Parameters
+- `unit_w = 1` → Each unit = 1 kg  
+- `unit_v = 20` → Each unit = 20 cubic meters  
+- `dw = 1` → Distance from dark store to warehouse  
+- `dd = 2` → Distance between dark stores  
+- Truck capacities:
+  - Weight: `{100, 200, 500}`
+  - Volume: `{1000, 2000, 5000}`
+- Cost factors: `{1, 2, 3}` (for trucks 0, 1, 2)
 
 ---
 
-## ⚡ Complexity Analysis
+## 🚀 How to Compile & Run
+```bash
+g++ main.cpp -o replenish
+./replenish
 
 
----

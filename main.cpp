@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <set>
+#include <algorithm>
 using namespace std;
 
 class Order{
@@ -15,19 +17,37 @@ public:
     }
 };
 
-bool cmp(Order& a, Order& b) {
+bool cmp(const Order& a, const Order& b) {
     return a.timestamp < b.timestamp; 
 }
 
 vector<vector<int>> get_all_combinations(int k, int a[]){
     vector<vector<int>> res;
-
+    int n = 3; 
+    for (int mask = 1; mask < (1 << n); mask++) {
+        int sum = 0;
+        vector<int> comb;
+        for (int i = 0; i < n; i++) {
+            if (mask & (1 << i)) {
+                sum += a[i];
+                comb.push_back(i); 
+            }
+        }
+        if (sum >= k) { 
+            res.push_back(comb);
+        }
+    }
     return res;
 }
 
 vector<vector<int>> intersect(vector<vector<int>> a, vector<vector<int>> b){
     vector<vector<int>> res;
-
+    set<vector<int>> s(b.begin(), b.end()); 
+    for (auto &x : a) {
+        if (s.count(x)) {
+            res.push_back(x);
+        }
+    }
     return res;
 }
 
@@ -38,24 +58,63 @@ int find_min_cost_at_timestamp(int i, vector<int> at_timestamp, vector<Order>& o
     vector<vector<int>> volume_fit = get_all_combinations(total_volume, tv);
     vector<vector<int>> weight_fit = get_all_combinations(total_weight, tw);
     vector<vector<int>> possible_combinations = intersect(volume_fit, weight_fit);
-    // for example for 300, 
+    
+    cout << "Timestamp " << i << " (needs " << total_volume << " volume, " << total_weight << " weight):" << endl;
+    cout << "  Volume-fit combinations: ";
+    for(auto& comb : volume_fit) {
+        cout << "[";
+        for(int j = 0; j < comb.size(); j++) {
+            cout << tv[comb[j]];
+            if(j < comb.size()-1) cout << "+";
+        }
+        cout << "] ";
+    }
+    cout << endl;
+    
+    cout << "  Weight-fit combinations: ";
+    for(auto& comb : weight_fit) {
+        cout << "[";
+        for(int j = 0; j < comb.size(); j++) {
+            cout << tw[comb[j]];
+            if(j < comb.size()-1) cout << "+";
+        }
+        cout << "] ";
+    }
+    cout << endl;
+    
+    cout << "  Feasible combinations: ";
+    for(auto& comb : possible_combinations) {
+        cout << "[";
+        for(int j = 0; j < comb.size(); j++) {
+            cout << "Truck" << comb[j] << "(" << tv[comb[j]] << "v," << tw[comb[j]] << "w)";
+            if(j < comb.size()-1) cout << "+";
+        }
+        cout << "] ";
+    }
+    cout << endl;
+    
     vector<int> costs;
-    for(auto i: possible_combinations){
+    for(auto m: possible_combinations){
         int temp = 0;
-        for(auto j: i){
-            // need to figure out the total distance travelled by each truck, as of now lets assume all dark stores are at origin
-            // these if-else can be removed if we just take the truck cost factors as an array, then we can reference them using index
+        for(auto j: m){
             if(j==0){
-
+                temp += cf1*dw;
             }
             else if(j==1){
-
+                temp += cf2*dw;
             }
             else{
-
+                temp += cf3*dw;
             }
         }
+        costs.push_back(temp);
     }
+    if (costs.empty()) {
+        cout << "  No feasible combination found!" << endl;
+        return -1;
+    }
+    cost = *min_element(costs.begin(), costs.end());
+    cout << "  Minimum cost: " << cost << endl << endl;
     return cost;
 }
 
@@ -81,12 +140,12 @@ int find_min_cost_for_replenishment(vector<Order>& orders, int tw[], int tv[], i
    cout << endl;
    int min_cost = 0;
    for(int i=start_time; i<=end_time; i++){
-     min_cost += find_min_cost_at_timestamp(i, at_timestamp, orders, tw, tv, dd, dw, unit_v, unit_w, cf1, cf2, cf3)
+     min_cost += find_min_cost_at_timestamp(i, at_timestamp, orders, tw, tv, dd, dw, unit_v, unit_w, cf1, cf2, cf3);
    }
    return min_cost;
 }
 
-void main(){
+int main(){
    vector<Order> orders;
    cout << "Enter the number of orders: ";
 //    Like:
@@ -103,7 +162,7 @@ void main(){
     }
     int unit_w = 1; // 1 unit weight is 1 kg
     int unit_v = 20; // 1 unit volume is 20 cubic meter
-    int dw = 1.5; // distance between dark store and warehouse, same for all
+    int dw = 1; // distance between dark store and warehouse, same for all
     // cout << "Enter distance of dark stores from warehouse: ";
     // cin >> dw;
     int dd = 2; // distance between each dark store
@@ -111,6 +170,7 @@ void main(){
     int truck_w[3] = {100, 200, 500};
     int truck_v[3] = {1000, 2000, 5000};
     //  cost = cost_factor_of_truck*total_distance_travelled
-   int cost = find_min_cost_for_replenishment(orders, truck_v, truck_w, dd, dw, unit_v, unit_w, cf1, cf2, cf3);
-   cout << "Minimum cost to replenish all orders: " << cost << endl;
+    int cost = find_min_cost_for_replenishment(orders, truck_w, truck_v, dd, dw, unit_v, unit_w, cf1, cf2, cf3);
+    cout << "Minimum cost to replenish all orders: " << cost << endl;
+    return 0;
 }   
