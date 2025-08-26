@@ -1,5 +1,7 @@
 # Truck Replenishment Cost Optimization
 
+![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=question)
+
 This project simulates a replenishment system where orders arrive over time and must be fulfilled using available trucks.  
 Each truck has a weight and volume capacity, as well as a cost factor. The goal is to **minimize the total replenishment cost** while ensuring all orders are satisfied.
 
